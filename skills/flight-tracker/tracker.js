@@ -105,16 +105,18 @@ async function main() {
   });
 
   const results = [];
-  const page = await browser.newPage();
-  await page.setExtraHTTPHeaders({ 'Accept-Language': 'en-US,en;q=0.9' });
 
   for (const flight of FLIGHTS) {
+    const page = await browser.newPage();
+    await page.setExtraHTTPHeaders({ 'Accept-Language': 'en-US,en;q=0.9' });
     try {
       const sia = await extractSIAPrice(page, flight);
       results.push({ ...flight, sia });
     } catch (err) {
       console.error(`[${flight.label}] Error:`, err.message);
       results.push({ ...flight, sia: null });
+    } finally {
+      await page.close();
     }
   }
 
