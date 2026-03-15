@@ -1,0 +1,9 @@
+{
+  "name": "flight-tracker",
+  "version": "1.0.0",
+  "description": "Daily Singapore Airlines flight price tracker",
+  "main": "tracker.js",
+  "dependencies": {
+    "puppeteer-core": "^23.0.0"
+  }
+}
