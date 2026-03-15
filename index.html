@@ -1,0 +1,392 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>☁️ Dou Yun — Jiang Family</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #ffffff;
+    --surface: #f8f8f6;
+    --border: #e8e8e4;
+    --text: #1a1a18;
+    --muted: #6b6b67;
+    --faint: #9b9b97;
+    --cloud: #7c3aed;
+    --cloud-light: #f5f3ff;
+    --cloud-mid: #ddd6fe;
+    --success-bg: #f0faf5;
+    --success: #0d7a4e;
+    --warning-bg: #fdf8f0;
+    --warning: #92600a;
+    --pending-bg: #f5f5f3;
+    --pending: #6b6b67;
+    --sidebar-w: 220px;
+    --header-h: 56px;
+  }
+
+  html { font-size: 15px; }
+  body { background: var(--bg); color: var(--text); font-family: 'DM Sans', sans-serif; line-height: 1.6; }
+  a { color: inherit; text-decoration: none; }
+
+  .topnav {
+    position: fixed; top: 0; left: 0; right: 0;
+    height: var(--header-h);
+    background: var(--bg);
+    border-bottom: 1px solid var(--border);
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 0 24px; z-index: 100;
+  }
+  .nav-left { display: flex; align-items: center; gap: 10px; }
+  .logo-mark {
+    width: 26px; height: 26px; background: var(--cloud);
+    border-radius: 6px; display: flex; align-items: center; justify-content: center;
+  }
+  .logo-mark span { color: #fff; font-size: 14px; }
+  .logo-name { font-size: 14px; font-weight: 600; letter-spacing: -0.01em; }
+  .logo-version {
+    font-size: 11px; color: var(--cloud);
+    font-family: 'Inter', monospace;
+    border: 1px solid var(--cloud-mid);
+    background: var(--cloud-light);
+    padding: 1px 7px; border-radius: 100px;
+  }
+  .nav-right { font-size: 12px; color: var(--faint); }
+
+  .layout { display: flex; padding-top: var(--header-h); min-height: 100vh; }
+
+  .sidebar {
+    width: var(--sidebar-w); flex-shrink: 0;
+    position: fixed; top: var(--header-h); bottom: 0; left: 0;
+    border-right: 1px solid var(--border);
+    padding: 20px 12px; overflow-y: auto;
+  }
+  .sidebar-label {
+    font-size: 10.5px; font-weight: 600; letter-spacing: .08em;
+    text-transform: uppercase; color: var(--faint);
+    padding: 0 8px; margin-bottom: 4px;
+  }
+  .sidebar-section { margin-bottom: 24px; }
+  .sidebar-link {
+    display: flex; align-items: center; gap: 8px;
+    width: 100%; padding: 6px 8px; border-radius: 6px;
+    font-size: 13.5px; color: var(--muted); background: none; border: none;
+    cursor: pointer; text-align: left; transition: all .15s;
+  }
+  .sidebar-link:hover { background: var(--surface); color: var(--text); }
+  .sidebar-link.active { background: var(--cloud-light); color: var(--cloud); font-weight: 500; }
+
+  .main { margin-left: var(--sidebar-w); flex: 1; padding: 36px 40px; max-width: 860px; }
+
+  .content-panel { display: none; }
+  .content-panel.active { display: block; }
+
+  .page-header { margin-bottom: 32px; }
+  .page-eyebrow { font-size: 11.5px; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; color: var(--cloud); margin-bottom: 6px; }
+  .page-title { font-size: 26px; font-weight: 700; letter-spacing: -.02em; margin-bottom: 8px; }
+  .page-desc { font-size: 14px; color: var(--muted); max-width: 620px; line-height: 1.7; }
+
+  .section { margin-bottom: 36px; }
+  .section-title { font-size: 12px; font-weight: 600; letter-spacing: .07em; text-transform: uppercase; color: var(--faint); margin-bottom: 12px; }
+
+  .card {
+    border: 1px solid var(--border); border-radius: 10px;
+    padding: 18px 20px; background: var(--bg);
+  }
+  .card + .card { margin-top: 10px; }
+
+  .stats-row { display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 32px; }
+  .stat-box {
+    flex: 1; min-width: 110px;
+    border: 1px solid var(--border); border-radius: 10px;
+    padding: 14px 16px;
+  }
+  .stat-label { font-size: 11px; font-weight: 600; letter-spacing: .07em; text-transform: uppercase; color: var(--faint); margin-bottom: 4px; }
+  .stat-val { font-size: 15px; font-weight: 600; }
+  .cloud-accent { color: var(--cloud); }
+
+  .data-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  .data-table th { text-align: left; font-size: 11px; font-weight: 600; letter-spacing: .06em; text-transform: uppercase; color: var(--faint); padding: 0 12px 10px 0; border-bottom: 1px solid var(--border); }
+  .data-table td { padding: 10px 12px 10px 0; border-bottom: 1px solid var(--border-light, #f0f0ec); vertical-align: top; color: var(--muted); line-height: 1.6; }
+  .data-table tr:last-child td { border-bottom: none; }
+  .data-table td:first-child { color: var(--text); font-weight: 500; white-space: nowrap; }
+
+  .skill-row { display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; padding: 14px 0; border-bottom: 1px solid var(--border); }
+  .skill-row:last-child { border-bottom: none; padding-bottom: 0; }
+  .skill-row:first-child { padding-top: 0; }
+  .skill-name { font-size: 13.5px; font-weight: 600; margin-bottom: 3px; }
+  .skill-desc { font-size: 13px; color: var(--muted); line-height: 1.6; }
+
+  .badge { font-size: 11px; font-weight: 600; padding: 3px 9px; border-radius: 100px; white-space: nowrap; }
+  .badge-active { background: var(--success-bg); color: var(--success); }
+  .badge-planned { background: var(--pending-bg); color: var(--pending); }
+
+  .tag { display: inline-block; font-size: 12px; background: var(--cloud-light); color: var(--cloud); border: 1px solid var(--cloud-mid); padding: 3px 10px; border-radius: 100px; }
+
+  code { font-family: 'Inter', monospace; font-size: 12px; background: var(--surface); padding: 1px 5px; border-radius: 4px; }
+
+  .lesson-row { padding: 12px 0; border-bottom: 1px solid var(--border); }
+  .lesson-row:last-child { border-bottom: none; }
+  .lesson-problem { font-size: 13px; font-weight: 600; color: var(--text); margin-bottom: 4px; }
+  .lesson-fix { font-size: 13px; color: var(--muted); line-height: 1.6; }
+
+  @media (max-width: 700px) {
+    .sidebar { display: none; }
+    .main { margin-left: 0; padding: 24px 16px; }
+  }
+</style>
+</head>
+<body>
+<div class="layout">
+
+  <header class="topnav">
+    <div class="nav-left">
+      <div class="logo-mark"><span>☁️</span></div>
+      <span class="logo-name">Dou Yun <span style="color:var(--faint);font-weight:400">斗云</span></span>
+      <span class="logo-version">Personal</span>
+    </div>
+    <div class="nav-right">Jiang Family — Private</div>
+  </header>
+
+  <aside class="sidebar">
+    <div class="sidebar-section">
+      <div class="sidebar-label">Overview</div>
+      <button class="sidebar-link active" onclick="nav('about',this)">☁️ About Dou Yun</button>
+      <button class="sidebar-link" onclick="nav('family',this)">👨‍👩‍👧‍👧 Family</button>
+    </div>
+    <div class="sidebar-section">
+      <div class="sidebar-label">Setup</div>
+      <button class="sidebar-link" onclick="nav('technical',this)">⚙️ Technical</button>
+      <button class="sidebar-link" onclick="nav('skills',this)">✨ Skills</button>
+      <button class="sidebar-link" onclick="nav('lessons',this)">📖 Lessons Learned</button>
+    </div>
+    <div class="sidebar-section">
+      <div class="sidebar-label">Owner</div>
+      <div style="padding:0 8px;">
+        <div style="font-size:13px;font-weight:600;color:var(--text);margin-bottom:2px;">Gabriel Jiang</div>
+        <div style="font-size:12px;color:var(--faint);">Personal use only</div>
+      </div>
+    </div>
+  </aside>
+
+  <main class="main">
+
+    <!-- ABOUT -->
+    <div id="about" class="content-panel active">
+      <div class="page-header">
+        <div class="page-eyebrow">Personal Agent — Jiang Family</div>
+        <div class="page-title">☁️ Dou Yun <span style="font-size:18px;font-weight:400;color:var(--faint)">斗云</span></div>
+        <div class="page-desc">Family agent running on the same 5090 hardware as Atlas but fully isolated. Separate workspace, separate WhatsApp number, completely different persona. Named after Jin Dou Yun — Sun Wukong's magical cloud. She shows up wherever the family needs her.</div>
+      </div>
+
+      <div class="stats-row">
+        <div class="stat-box">
+          <div class="stat-label">Model</div>
+          <div class="stat-val" style="color:var(--cloud)">ollama/douyun</div>
+        </div>
+        <div class="stat-box">
+          <div class="stat-label">Base</div>
+          <div class="stat-val">qwen2.5vl:7b</div>
+        </div>
+        <div class="stat-box">
+          <div class="stat-label">Status</div>
+          <div class="stat-val"><span class="badge badge-active">Live</span></div>
+        </div>
+        <div class="stat-box">
+          <div class="stat-label">Channel</div>
+          <div class="stat-val">WhatsApp</div>
+        </div>
+        <div class="stat-box">
+          <div class="stat-label">Vision</div>
+          <div class="stat-val"><span class="badge badge-active">Live</span></div>
+        </div>
+      </div>
+
+      <div class="section">
+        <div class="section-title">Persona</div>
+        <div class="card">
+          <p style="font-size:13.5px;color:var(--muted);line-height:1.8;">The family's big aunt. Warm, playful, a little cheeky. She remembers birthdays, tracks holiday flights, plays chess with Rachyl, helps with homework (guides, never gives answers), and keeps things light in the family chat. Not a work tool — completely separate from Atlas and everything project-related.</p>
+          <div style="margin-top:14px;display:flex;flex-wrap:wrap;gap:8px;">
+            <span class="tag">Big aunt energy</span>
+            <span class="tag">Vision-capable</span>
+            <span class="tag">Local model — fully private</span>
+            <span class="tag">Isolated from Atlas</span>
+            <span class="tag">☁️ cloud emoji is her thing</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- FAMILY -->
+    <div id="family" class="content-panel">
+      <div class="page-header">
+        <div class="page-eyebrow">Jiang Family</div>
+        <div class="page-title">👨‍👩‍👧‍👧 Family Profiles</div>
+        <div class="page-desc">How Dou Yun knows and talks to each family member.</div>
+      </div>
+      <div class="section">
+        <div class="card">
+          <table class="data-table">
+            <thead><tr><th>Name</th><th>Details</th><th>How Dou Yun talks to them</th></tr></thead>
+            <tbody>
+              <tr>
+                <td>Gabriel<br><span style="font-weight:400;font-size:12px;color:var(--faint)">Onion / BearHuan</span></td>
+                <td>Dad. BearHuan = what the kids called him when they couldn't say "best friend" yet.</td>
+                <td>Casual, matches his energy. Light banter fine.</td>
+              </tr>
+              <tr>
+                <td>Yvonne</td>
+                <td>Mum. Logical, composed, keeps everyone in line.</td>
+                <td>Warm but efficient. No fluff.</td>
+              </tr>
+              <tr>
+                <td>Rachyl<br><span style="font-weight:400;font-size:12px;color:var(--faint)">b. 7 Mar 2015 · P5</span></td>
+                <td>Eldest. Chess, BJJ, homework questions. Sharp.</td>
+                <td>Normal conversation. Homework guidance — ask first, never give the answer.</td>
+              </tr>
+              <tr>
+                <td>Hazyl<br><span style="font-weight:400;font-size:12px;color:var(--faint)">b. 14 Mar 2018 · P2</span></td>
+                <td>Youngest. Loves dancing. Still learning to read and write.</td>
+                <td>ONE LINE MAX. Simple words. Never a question that needs a written answer.</td>
+              </tr>
+              <tr>
+                <td>Donki 🐕</td>
+                <td>Golden Retriever, 4 years old (Nov 2025).</td>
+                <td>—</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- TECHNICAL -->
+    <div id="technical" class="content-panel">
+      <div class="page-header">
+        <div class="page-eyebrow">Infrastructure</div>
+        <div class="page-title">⚙️ Technical Setup</div>
+        <div class="page-desc">How Dou Yun runs alongside Atlas on the same hardware without mixing sessions or data.</div>
+      </div>
+      <div class="section">
+        <div class="card">
+          <table class="data-table">
+            <thead><tr><th>Component</th><th>Value</th><th>Notes</th></tr></thead>
+            <tbody>
+              <tr><td>Primary model</td><td><code>ollama/douyun</code></td><td>Custom Modelfile on qwen2.5vl:7b. No-thinking rule baked at model level — not just in AGENTS.md.</td></tr>
+              <tr><td>Vision</td><td>qwen2.5vl:7b (native)</td><td>Reads images directly — worksheets, photos, drawings. Near-instant on 5090.</td></tr>
+              <tr><td>Memory search</td><td>nomic-embed-text</td><td>Same vector search as Atlas, isolated to douyun agentDir.</td></tr>
+              <tr><td>Workspace</td><td>agents/douyun/workspace</td><td>SOUL.md, AGENTS.md, FAMILY.md, MEMORY.md, daily notes in memory/</td></tr>
+              <tr><td>Agent dir</td><td>agents/douyun/agent</td><td>Isolated auth profiles and session store. No cross-talk with Atlas.</td></tr>
+              <tr><td>WA account</td><td>douyun (separate number)</td><td>Routed via bindings in openclaw.json. Separate from Atlas's default account.</td></tr>
+              <tr><td>Allowlist</td><td>+6598315644 (Gabriel only)</td><td>Family members to be added when onboarded.</td></tr>
+              <tr><td>Cold backup</td><td><a href="https://github.com/bcchew-art/douyun" target="_blank" style="color:var(--cloud)">github.com/bcchew-art/douyun</a></td><td>Manual push on meaningful milestones. Project record and journey log.</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <div class="section">
+        <div class="section-title">Multi-Agent Config (openclaw.json)</div>
+        <div class="card">
+          <p style="font-size:13px;color:var(--muted);line-height:1.8;">Each agent needs: its own entry in <code>agents.list</code> with a unique <code>agentDir</code> and <code>workspace</code>, a <code>binding</code> to route inbound messages, and a named WhatsApp account under <code>channels.whatsapp.accounts</code>. Without bindings, messages always go to the default agent.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- SKILLS -->
+    <div id="skills" class="content-panel">
+      <div class="page-header">
+        <div class="page-eyebrow">Capabilities</div>
+        <div class="page-title">✨ Skills</div>
+        <div class="page-desc">What Dou Yun can do for the family.</div>
+      </div>
+      <div class="section">
+        <div class="card">
+          <div class="skill-row">
+            <div>
+              <div class="skill-name">Vision / Homework Help</div>
+              <div class="skill-desc">Reads photos of school worksheets. Guides Rachyl or Hazyl to the answer — never gives it directly. Asks "what do you think?" first. Celebrates when they get it.</div>
+            </div>
+            <span class="badge badge-active" style="flex-shrink:0">Live</span>
+          </div>
+          <div class="skill-row">
+            <div>
+              <div class="skill-name">Chess</div>
+              <div class="skill-desc">Plays chess with Rachyl in WhatsApp. Challenges her without crushing her — she's still learning.</div>
+            </div>
+            <span class="badge badge-planned" style="flex-shrink:0">Planned</span>
+          </div>
+          <div class="skill-row">
+            <div>
+              <div class="skill-name">Flight Price Tracker</div>
+              <div class="skill-desc">Monitors air ticket prices for planned family holidays. Posts daily updates to the family group when a trip is being planned.</div>
+            </div>
+            <span class="badge badge-planned" style="flex-shrink:0">Planned</span>
+          </div>
+          <div class="skill-row">
+            <div>
+              <div class="skill-name">Birthday & Anniversary Reminders</div>
+              <div class="skill-desc">Sends a warm, personal message on the day. Never generic. Rachyl: 7 Mar. Hazyl: 14 Mar. Others logged from conversation.</div>
+            </div>
+            <span class="badge badge-active" style="flex-shrink:0">Live</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- LESSONS -->
+    <div id="lessons" class="content-panel">
+      <div class="page-header">
+        <div class="page-eyebrow">Setup Day — 15 Mar 2026</div>
+        <div class="page-title">📖 Lessons Learned</div>
+        <div class="page-desc">Things that went wrong and how we fixed them during Dou Yun's first setup day.</div>
+      </div>
+      <div class="section">
+        <div class="card">
+          <div class="lesson-row">
+            <div class="lesson-problem">Multi-agent routing not working — Dou Yun never received messages</div>
+            <div class="lesson-fix">Missing <code>bindings</code> section in openclaw.json. Each agent needs an explicit binding to receive messages. Without it everything routes to the default agent.</div>
+          </div>
+          <div class="lesson-row">
+            <div class="lesson-problem">Main agent (Atlas) disappeared from dashboard after adding agents.list</div>
+            <div class="lesson-fix">Once <code>agents.list</code> exists, OpenClaw only shows listed agents. Must explicitly add <code>{"id": "main", "default": true}</code> to the list.</div>
+          </div>
+          <div class="lesson-row">
+            <div class="lesson-problem">Qwen3:32b thinking out loud in WhatsApp</div>
+            <div class="lesson-fix">AGENTS.md and SOUL.md rules alone weren't enough. Created a custom Ollama Modelfile (<code>douyun</code>) with the no-thinking rule baked at model level. Only then did it stop reliably.</div>
+          </div>
+          <div class="lesson-row">
+            <div class="lesson-problem">imageModel fallback not triggering for vision</div>
+            <div class="lesson-fix"><code>imageModel</code> only fires when the primary model declares it can't handle images — unreliable. Fix: make qwen2.5vl:7b the primary model directly. Vision + text in one model, no routing needed.</div>
+          </div>
+          <div class="lesson-row">
+            <div class="lesson-problem">qwen3-vl:8b crashing mid-stream (stream ended without final response)</div>
+            <div class="lesson-fix">Model too new and unstable. Switched to qwen2.5vl:7b — more mature (1.4M pulls), fast, and reliable on the 5090.</div>
+          </div>
+          <div class="lesson-row">
+            <div class="lesson-problem">Model leaking file paths and MEMORY.md citations in replies</div>
+            <div class="lesson-fix">Added explicit rules to AGENTS.md, SOUL.md, and the Modelfile system prompt. Three-layer defence: model level → persona file → operating rules.</div>
+          </div>
+          <div class="lesson-row">
+            <div class="lesson-problem">per-agent modelOptions and imageModel not valid config keys</div>
+            <div class="lesson-fix">Only <code>agents.defaults.imageModel</code> is valid in v2026.3.11. Per-agent model options not supported. Use Modelfile to customise model behaviour per agent instead.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<script>
+  function nav(id, btn) {
+    document.querySelectorAll('.content-panel').forEach(p => p.classList.remove('active'));
+    document.querySelectorAll('.sidebar-link').forEach(b => b.classList.remove('active'));
+    document.getElementById(id).classList.add('active');
+    if (btn) btn.classList.add('active');
+  }
+</script>
+</body>
+</html>

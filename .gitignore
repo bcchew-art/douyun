@@ -1,0 +1,6 @@
+# Session data
+sessions/
+
+# Temp
+*.tmp
+*.log
