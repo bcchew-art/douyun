@@ -93,7 +93,7 @@ async function main() {
   }
 
   const today = new Date().toLocaleDateString('en-CA', { timeZone: 'Asia/Singapore' });
-  const prevDates = Object.keys(history).sort();
+  const prevDates = Object.keys(history).filter(d => d !== today).sort();
   const prevDate = prevDates[prevDates.length - 1];
   const prev = prevDate ? history[prevDate] : null;
 
