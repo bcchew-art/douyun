@@ -38,3 +38,10 @@ Skills are shared. Your setup is yours. Keeping them apart means you can update 
 ---
 
 Add whatever helps you do your job. This is your cheat sheet.
+
+## GitHub Backup
+
+- Repo: https://github.com/bcchew-art/douyun
+- Branch: main
+- To push changes: `bash git-push.sh "your message"` from this workspace folder
+- Credentials are embedded in the git remote URL — no login needed
