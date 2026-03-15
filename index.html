@@ -185,11 +185,11 @@
       <div class="stats-row">
         <div class="stat-box">
           <div class="stat-label">Model</div>
-          <div class="stat-val" style="color:var(--cloud)">ollama/douyun</div>
+          <div class="stat-val" style="color:var(--cloud)">ollama/qwen3:32b</div>
         </div>
         <div class="stat-box">
           <div class="stat-label">Base</div>
-          <div class="stat-val">qwen2.5vl:7b</div>
+          <div class="stat-val">qwen3:32b</div>
         </div>
         <div class="stat-box">
           <div class="stat-label">Status</div>
@@ -201,7 +201,7 @@
         </div>
         <div class="stat-box">
           <div class="stat-label">Vision</div>
-          <div class="stat-val"><span class="badge badge-active">Live</span></div>
+          <div class="stat-val"><span class="badge badge-pending">Pending</span></div>
         </div>
       </div>
 
@@ -211,7 +211,7 @@
           <p style="font-size:13.5px;color:var(--muted);line-height:1.8;">The family's big aunt. Warm, playful, a little cheeky. She remembers birthdays, tracks holiday flights, plays chess with Rachyl, helps with homework (guides, never gives answers), and keeps things light in the family chat. Not a work tool — completely separate from Atlas and everything project-related.</p>
           <div style="margin-top:14px;display:flex;flex-wrap:wrap;gap:8px;">
             <span class="tag">Big aunt energy</span>
-            <span class="tag">Vision-capable</span>
+            <span class="tag">Vision — pending</span>
             <span class="tag">Local model — fully private</span>
             <span class="tag">Isolated from Atlas</span>
             <span class="tag">☁️ cloud emoji is her thing</span>
@@ -275,8 +275,8 @@
           <table class="data-table">
             <thead><tr><th>Component</th><th>Value</th><th>Notes</th></tr></thead>
             <tbody>
-              <tr><td>Primary model</td><td><code>ollama/douyun</code></td><td>Custom Modelfile on qwen2.5vl:7b. No-thinking rule baked at model level — not just in AGENTS.md.</td></tr>
-              <tr><td>Vision</td><td>qwen2.5vl:7b (native)</td><td>Reads images directly — worksheets, photos, drawings. Near-instant on 5090.</td></tr>
+              <tr><td>Primary model</td><td><code>ollama/qwen3:32b</code></td><td>Local, fully private. Text, reasoning, tool use. Fast on RTX 5090.</td></tr>
+              <tr><td>Image model</td><td><code>ollama/qwen2.5vl:7b</code></td><td>Set as imageModel in agents.defaults. Vision routing via OpenClaw v2026.3.13 — still being tested. Dou Yun falls back to asking for description if image can't be processed.</td></tr>
               <tr><td>Memory search</td><td>nomic-embed-text</td><td>Same vector search as Atlas, isolated to douyun agentDir.</td></tr>
               <tr><td>Workspace</td><td>agents/douyun/workspace</td><td>SOUL.md, AGENTS.md, FAMILY.md, MEMORY.md, daily notes in memory/</td></tr>
               <tr><td>Agent dir</td><td>agents/douyun/agent</td><td>Isolated auth profiles and session store. No cross-talk with Atlas.</td></tr>
@@ -355,23 +355,23 @@
           </div>
           <div class="lesson-row">
             <div class="lesson-problem">Qwen3:32b thinking out loud in WhatsApp</div>
-            <div class="lesson-fix">AGENTS.md and SOUL.md rules alone weren't enough. Created a custom Ollama Modelfile (<code>douyun</code>) with the no-thinking rule baked at model level. Only then did it stop reliably.</div>
-          </div>
-          <div class="lesson-row">
-            <div class="lesson-problem">imageModel fallback not triggering for vision</div>
-            <div class="lesson-fix"><code>imageModel</code> only fires when the primary model declares it can't handle images — unreliable. Fix: make qwen2.5vl:7b the primary model directly. Vision + text in one model, no routing needed.</div>
-          </div>
-          <div class="lesson-row">
-            <div class="lesson-problem">qwen3-vl:8b crashing mid-stream (stream ended without final response)</div>
-            <div class="lesson-fix">Model too new and unstable. Switched to qwen2.5vl:7b — more mature (1.4M pulls), fast, and reliable on the 5090.</div>
-          </div>
-          <div class="lesson-row">
-            <div class="lesson-problem">Model leaking file paths and MEMORY.md citations in replies</div>
-            <div class="lesson-fix">Added explicit rules to AGENTS.md, SOUL.md, and the Modelfile system prompt. Three-layer defence: model level → persona file → operating rules.</div>
+            <div class="lesson-fix">Three-layer defence: SOUL.md critical rule + AGENTS.md thinking rule + Modelfile <code>/no_think</code> prefix in SYSTEM prompt. Custom model <code>ollama/douyun</code> via Modelfile kept failing auth ("Ollama requires authentication") despite correct auth-profiles.json — root cause unknown. Currently using <code>qwen3:32b</code> directly with the two prompt-layer rules. Thinking leaks reduced but not 100% suppressed.</div>
           </div>
           <div class="lesson-row">
             <div class="lesson-problem">per-agent modelOptions and imageModel not valid config keys</div>
-            <div class="lesson-fix">Only <code>agents.defaults.imageModel</code> is valid in v2026.3.11. Per-agent model options not supported. Use Modelfile to customise model behaviour per agent instead.</div>
+            <div class="lesson-fix">Only <code>agents.defaults.imageModel</code> is valid in v2026.3.11/3.13. Per-agent <code>imageModel</code> and <code>modelOptions</code> are unrecognised keys — OpenClaw rejects them.</div>
+          </div>
+          <div class="lesson-row">
+            <div class="lesson-problem">Image routing: multiple failed attempts</div>
+            <div class="lesson-fix">Tried: qwen3-vl:8b (stream crash), qwen2.5vl:7b as primary (auto-discovery doesn't tag it as vision), gpt-5.4 as imageModel ("Instructions required" — Codex API needs instructions field OpenClaw doesn't send), sessions_spawn (Dou Yun invented wrong model names and looped with 5 auto-replies). Current state: <code>qwen2.5vl:7b</code> set as <code>agents.defaults.imageModel</code>, testing with v2026.3.13. Dou Yun falls back to asking for description if image processing fails.</div>
+          </div>
+          <div class="lesson-row">
+            <div class="lesson-problem">qwen3-vl:8b crashing mid-stream</div>
+            <div class="lesson-fix">"Stream ended without final response." Model too new and unstable. Switched to qwen2.5vl:7b (more mature, 1.4M pulls).</div>
+          </div>
+          <div class="lesson-row">
+            <div class="lesson-problem">Model leaking file paths and MEMORY.md citations in replies</div>
+            <div class="lesson-fix">Added explicit "No technical self-references" rules to AGENTS.md and SOUL.md. Never mention file paths, MEMORY.md, model name, or other agents on the machine.</div>
           </div>
         </div>
       </div>

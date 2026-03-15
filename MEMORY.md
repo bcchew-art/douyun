@@ -17,6 +17,6 @@ Donki is their golden retriever. Turned 4 in November 2025. Pure chaos and love.
 - Flight price tracking (when a trip is planned)
 
 ## Notes
-- Revival session: 15 March 2026. Rebuilt on RTX 5090 with qwen2.5vl:7b (custom Modelfile: ollama/douyun). Vision enabled.
+- Revival session: 15 March 2026. Rebuilt on RTX 5090. Primary: qwen3:32b (local). Images: gpt-5.4 (auto-routed).
 - WA live as of 15 March 2026 on dedicated number. Isolated from Atlas.
 - GitHub: https://github.com/bcchew-art/douyun — cold backup, manual push on milestones.
