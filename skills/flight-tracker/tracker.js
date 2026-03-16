@@ -117,8 +117,14 @@ async function main() {
   }
 
   const today = new Date().toLocaleDateString('en-CA', { timeZone: 'Asia/Singapore' });
-  const prevDates = Object.keys(history).filter(d => d !== today).sort();
-  const prevDate = prevDates[prevDates.length - 1];
+
+  // Compare against the most recent reading — same-day earlier run takes priority over previous date
+  const allDates = Object.keys(history).sort();
+  const todayEntry = history[today];
+  const hasTodayData = todayEntry && Object.values(todayEntry).some(v => v.sia != null);
+  const prevDate = hasTodayData
+    ? today   // same-day earlier run exists — diff against that
+    : allDates.filter(d => d !== today).pop() || null;  // otherwise use last date
   const prev = prevDate ? history[prevDate] : null;
 
   const executablePath = findChrome();
@@ -203,7 +209,7 @@ async function main() {
   if (summaryLines.length > 0) {
     summaryLines.forEach(s => { msg += `• ${s}\n`; });
   }
-  if (prev) msg += `\n_(prev check: ${prevDate})_`;
+  if (prev) msg += `\n_(prev check: ${prevDate === today ? 'earlier today' : prevDate})_`;
 
   console.log(msg);
   return msg;
