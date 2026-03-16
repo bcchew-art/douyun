@@ -130,15 +130,26 @@ async function main() {
   const executablePath = findChrome();
   const browser = await puppeteer.launch({
     executablePath,
-    headless: 'new',
-    args: ['--no-sandbox', '--disable-setuid-sandbox', '--lang=en-US,en'],
+    headless: false,
+    args: [
+      '--no-sandbox',
+      '--disable-setuid-sandbox',
+      '--lang=en-US,en',
+      '--disable-blink-features=AutomationControlled',
+      '--disable-infobars',
+      '--window-size=1366,768',
+    ],
   });
 
   const results = [];
 
   for (const flight of FLIGHTS) {
     const page = await browser.newPage();
+    await page.setUserAgent('Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36');
     await page.setExtraHTTPHeaders({ 'Accept-Language': 'en-US,en;q=0.9' });
+    await page.evaluateOnNewDocument(() => {
+      Object.defineProperty(navigator, 'webdriver', { get: () => undefined });
+    });
     try {
       const sia = await extractSIAPrice(page, flight);
       results.push({ ...flight, sia });
