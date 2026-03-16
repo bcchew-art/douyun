@@ -58,30 +58,54 @@ function formatDiff(curr, prev) {
 
 // ─── SCRAPER ─────────────────────────────────────────────────────────────────
 
+const RETRY_ATTEMPTS = 3;
+const RETRY_DELAY_MS = 20000; // 20s between retries
+
+function sleep(ms) {
+  return new Promise(resolve => setTimeout(resolve, ms));
+}
+
 async function extractSIAPrice(page, flight) {
-  await page.goto(flight.url, { waitUntil: 'networkidle2', timeout: 60000 });
+  for (let attempt = 1; attempt <= RETRY_ATTEMPTS; attempt++) {
+    if (attempt > 1) {
+      console.log(`[${flight.label}] Retry ${attempt}/${RETRY_ATTEMPTS} after ${RETRY_DELAY_MS / 1000}s...`);
+      await sleep(RETRY_DELAY_MS);
+    }
 
-  try {
-    await page.waitForFunction(
-      () => document.body.innerText.includes('Book with Singapore Airlines'),
-      { timeout: 30000 }
+    await page.goto(flight.url, { waitUntil: 'networkidle2', timeout: 60000 });
+
+    // Check for Google Flights error page — bail and retry
+    const pageText = await page.evaluate(() =>
+      document.querySelector('main')?.innerText || document.body.innerText
     );
-  } catch (e) {
-    console.error(`[${flight.label}] Timed out waiting for SIA price`);
+    if (pageText.includes('Oops, something went wrong') || pageText.includes('Loading results')) {
+      console.error(`[${flight.label}] Google Flights error page on attempt ${attempt}. Will retry.`);
+      continue;
+    }
+
+    try {
+      await page.waitForFunction(
+        () => document.body.innerText.includes('Book with Singapore Airlines'),
+        { timeout: 30000 }
+      );
+    } catch (e) {
+      console.error(`[${flight.label}] Timed out waiting for SIA price (attempt ${attempt})`);
+      continue;
+    }
+
+    const text = await page.evaluate(() =>
+      document.querySelector('main')?.innerText || document.body.innerText
+    );
+
+    const siaBlock = text.match(/Book with Singapore Airlines[^\n]*\nSGD\s*([\d,]+)/);
+    const sia = siaBlock ? parseInt(siaBlock[1].replace(/,/g, '')) : null;
+
+    if (sia) return sia;
+
+    console.error(`[${flight.label}] Could not find SIA price on attempt ${attempt}. Snippet:\n`, text.substring(0, 800));
   }
 
-  const text = await page.evaluate(() =>
-    document.querySelector('main')?.innerText || document.body.innerText
-  );
-
-  const siaBlock = text.match(/Book with Singapore Airlines[^\n]*\nSGD\s*([\d,]+)/);
-  const sia = siaBlock ? parseInt(siaBlock[1].replace(/,/g, '')) : null;
-
-  if (!sia) {
-    console.error(`[${flight.label}] Could not find SIA price. Snippet:\n`, text.substring(0, 800));
-  }
-
-  return sia;
+  return null;
 }
 
 // ─── MAIN ────────────────────────────────────────────────────────────────────
@@ -122,11 +146,20 @@ async function main() {
 
   await browser.close();
 
-  // Save today
-  history[today] = {};
-  results.forEach(r => { history[today][r.label] = { sia: r.sia }; });
-  fs.mkdirSync(path.dirname(DATA_FILE), { recursive: true });
-  fs.writeFileSync(DATA_FILE, JSON.stringify(history, null, 2));
+  // Save today — only if at least one price was retrieved
+  const anySuccess = results.some(r => r.sia != null);
+  if (anySuccess) {
+    // Merge with existing today entry (don't overwrite good data with nulls)
+    const existing = history[today] || {};
+    history[today] = { ...existing };
+    results.forEach(r => {
+      if (r.sia != null) history[today][r.label] = { sia: r.sia };
+    });
+    fs.mkdirSync(path.dirname(DATA_FILE), { recursive: true });
+    fs.writeFileSync(DATA_FILE, JSON.stringify(history, null, 2));
+  } else {
+    console.error('All prices failed — skipping data save to preserve previous results.');
+  }
 
   // ─── FORMAT MESSAGE ───────────────────────────────────────────────────────
 
