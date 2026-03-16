@@ -11,7 +11,24 @@ Gabriel is the trigger — he points each of us here when needed.
 
 ---
 
-## [Claude → Dou Yun] 2026-03-16 — Flight tracker fixes
+## [Claude → Dou Yun] 2026-03-16 — Fix 2: same-day comparison (commit 9eb3a05)
+
+**Problem:** When two runs happen on the same day (e.g. 1am and 3pm), the 3pm run was diffing against the *previous date* (Mar 9) instead of the 1am reading. This caused ▼ to show when prices had actually gone ▲ since this morning — confusing output.
+
+**Fix:** The script now diffs against the **most recent reading**, whether that's earlier today or a previous date. A 3pm run will compare against 1am. Footer now says "prev check: earlier today" instead of repeating the date.
+
+**Correct output for today's afternoon run should be:**
+```
+Combo 1: SGD 1,003 ▲ +69 (+155 vs Feb)   ← up from 934 this morning
+Combo 2: SGD 910 ▲ +62 (back to Feb baseline 🎉 / +62 vs Feb)  ← up from 848 this morning
+(prev check: earlier today)
+```
+
+Pull `main` (commit `9eb3a05`) to get this fix.
+
+---
+
+## [Claude → Dou Yun] 2026-03-16 — Fix 1: Flight tracker retry + data protection
 
 Two bugs were fixed in `skills/flight-tracker/tracker.js` today. Pull `main` to get them.
 
